@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillOrbit - Notifications</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI;
+}
+
+body{
+  background:#0b120e;
+  color:#fff;
+}
+
+/* HEADER */
+.header{
+  background:#0f1f14;
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #1f3b2a;
+}
+
+.header h2{
+  color:#00ff88;
+  font-size:20px;
+}
+
+/* BUTTONS */
+.btn-group{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.btn{
+  text-decoration:none;
+  background:#142a1c;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:6px;
+  font-size:13px;
+  border:1px solid #1f3b2a;
+  transition:0.2s;
+}
+
+.btn:hover{
+  background:#00ff88;
+  color:#000;
+}
+
+.clear-btn{
+  background:#00ff88;
+  color:#000;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.clear-btn:hover{
+  background:#00cc6a;
+}
+
+/* CONTAINER */
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+/* TABS */
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+
+.tab{
+  padding:8px 14px;
+  border-radius:20px;
+  background:#142a1c;
+  color:#ccc;
+  cursor:pointer;
+  font-size:13px;
+  border:1px solid #1f3b2a;
+}
+
+.tab.active{
+  background:#00ff88;
+  color:#000;
+  font-weight:bold;
+}
+
+/* CARD */
+.card{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  background:#0f1f14;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:12px;
+  border-left:4px solid #00ff88;
+}
+
+.card:hover{
+  transform:scale(1.01);
+}
+
+.left{
+  display:flex;
+  gap:12px;
+}
+
+.icon{
+  width:40px;
+  height:40px;
+  background:#142a1c;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  font-size:18px;
+}
+
+.text p{
+  font-size:14px;
+}
+
+.meta{
+  font-size:12px;
+  color:#aaa;
+  margin-top:4px;
+}
+
+.right{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.small-btn{
+  background:#142a1c;
+  border:none;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.small-btn:hover{
+  background:#00ff88;
+  color:#000;
+}
+
+/* EMPTY */
+.empty{
+  text-align:center;
+  padding:60px 20px;
+  color:#888;
+}
+
+.empty-icon{
+  font-size:50px;
+}
+
+/* READ */
+.read{
+  opacity:0.5;
+  border-left:4px solid #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>🔔 Notifications</h2>
+
+  <div class="btn-group">
+    <a href="dashboard.html" class="btn">🏠 Dashboard</a>
+    <button class="clear-btn" onclick="clearAll()">Clear All</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" onclick="filter('all')">All</div>
+    <div class="tab" onclick="filter('unread')">Unread</div>
+    <div class="tab" onclick="filter('system')">System</div>
+    <div class="tab" onclick="filter('course')">Courses</div>
+  </div>
+
+  <div id="list"></div>
+
+</div>
+
+<script>
+
+const defaultData = [
+  {id:1,type:"course",icon:"📘",text:"New course: Full Stack Web Development is now available",time:"2 min ago",read:false},
+  {id:2,type:"system",icon:"⚙️",text:"System update completed successfully",time:"1 hour ago",read:true},
+  {id:3,type:"course",icon:"🎯",text:"Your Python assignment has been reviewed",time:"3 hours ago",read:false},
+  {id:4,type:"system",icon:"🔒",text:"Your account security is up to date",time:"1 day ago",read:true}
+];
+
+let notifications = JSON.parse(localStorage.getItem("noti")) || defaultData;
+let currentFilter = "all";
+
+function save(){
+  localStorage.setItem("noti", JSON.stringify(notifications));
+}
+
+function render(){
+  const list = document.getElementById("list");
+  let data = notifications;
+
+  if(currentFilter === "unread"){
+    data = data.filter(n => !n.read);
+  }
+  if(currentFilter === "system"){
+    data = data.filter(n => n.type === "system");
+  }
+  if(currentFilter === "course"){
+    data = data.filter(n => n.type === "course");
+  }
+
+  list.innerHTML = "";
+
+  if(data.length === 0){
+    list.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <p>No notifications</p>
+      </div>
+    `;
+    return;
+  }
+
+  data.forEach(n => {
+    const div = document.createElement("div");
+    div.className = "card " + (n.read ? "read" : "");
+
+    div.innerHTML = `
+      <div class="left">
+        <div class="icon">${n.icon}</div>
+        <div class="text">
+          <p>${n.text}</p>
+          <div class="meta">${n.time}</div>
+        </div>
+      </div>
+
+      <div class="right">
+        <button class="small-btn" onclick="mark(${n.id})">Mark Read</button>
+        <button class="small-btn" onclick="remove(${n.id})">Delete</button>
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+function mark(id){
+  notifications = notifications.map(n => {
+    if(n.id === id) n.read = true;
+    return n;
+  });
+  save();
+  render();
+}
+
+function remove(id){
+  notifications = notifications.filter(n => n.id !== id);
+  save();
+  render();
+}
+
+function clearAll(){
+  notifications = [];
+  save();
+  render();
+}
+
+function filter(type){
+  currentFilter = type;
+
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  event.target.classList.add("active");
+
+  render();
+}
+
+render();
+
+</script>
+
+</body>
+</html>
